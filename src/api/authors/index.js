@@ -1,5 +1,5 @@
 import express from "express";
-import { saveNewAuthor, findAuthors, findAuthorById, findAuthorsByIdAndUpdate } from "../../lib/db/tools.js";
+import { saveNewAuthor, findAuthors, findAuthorById, findAuthorsByIdAndUpdate, findAuthorsByIdAndDelete } from "../../lib/db/tools.js";
 
 const authorsRouter = express.Router();
 
@@ -54,6 +54,12 @@ authorsRouter.put("/:authorid", async (req, res, next) => {
 //delete the author with the given id
 authorsRouter.delete("/:authorid", async (req, res, next) => {
     try {
+        const updatedAuthor = await findAuthorsByIdAndDelete(req.params.authorid);
+        if (updatedAuthor !== null) {
+            res.status(204).send()
+        } else {
+            next()
+        };
     } catch (error) {
         next(error);
     };
