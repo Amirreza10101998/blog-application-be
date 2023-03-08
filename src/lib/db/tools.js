@@ -1,6 +1,8 @@
 import uniqid from "uniqid"
-import { getAuthors, writeAuthors } from "../fs/tools.js"
+import { getAuthors, getBlogPosts, writeAuthors, writeBlogPosts } from "../fs/tools.js"
 
+
+/*----------Authors----------*/
 export const saveNewAuthor = async newAuthorData => {
     const authors = await getAuthors()
 
@@ -50,4 +52,54 @@ export const findAuthorsByIdAndDelete = async authorId => {
       return null;
     }
 };
+
+/*----------Blog Posts----------*/
+export const saveNewBlogPost = async newBlogPostData => {
+    const blogPosts = await getBlogPosts()
+
+    const newBlogPost = {...newBlogPostData, createdAt: new Date(), updatedAt: new Date(), id: uniqid()}
+    
+    blogPosts.push(newBlogPost);
+
+    await writeBlogPosts(blogPosts);
+
+    return newBlogPost.id
+};
+
+export const findBlogPosts = () => getBlogPosts();
+
+export const findBlogPostById = async blogPostId => {
+    const blogPosts = await getBlogPosts();
+
+    const blogPost = blogPosts.find(blogPost => blogPost.id === blogPostId)
+
+    return blogPost
+};
+
+export const findBlogPostsByIdAndIupdate = async (blogPostId, updates) => {
+    const blogPosts = await getBlogPosts()
+    const index = blogPosts.findIndex(blogPost => blogPost.id === blogPostId);
+
+    if (index !== -1) {
+        blogPosts[index] = {...blogPosts[index], ...updates, updatedAt: new Date()}
+        await writeBlogPosts(blogPosts)
+        return blogPosts[index];
+    } else {
+        return null
+    }
+}
+
+export const findBlogPostsByIdAndDelete = async blogPostId => {
+    const blogPosts = await getBlogPosts();
   
+    const remainingBlogPost = blogPosts.find(blogPost => blogPost.id === blogPostId);
+  
+    if (remainingBlogPost) {
+      const index = blogPosts.indexOf(remainingBlogPost);
+      blogPosts.splice(index, 1);
+      await writeBlogPosts(blogPosts);
+      return remainingBlogPost;
+    } else {
+      return null;
+    }
+};

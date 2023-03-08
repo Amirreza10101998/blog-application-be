@@ -1,5 +1,8 @@
 import express from "express";
+import multer from "multer";
+import { extname } from "path"
 import { saveNewAuthor, findAuthors, findAuthorById, findAuthorsByIdAndUpdate, findAuthorsByIdAndDelete } from "../../lib/db/tools.js";
+import { saveAuthorsImages } from "../../lib/fs/tools.js";
 
 const authorsRouter = express.Router();
 
@@ -64,5 +67,25 @@ authorsRouter.delete("/:authorid", async (req, res, next) => {
         next(error);
     };
 });
+
+//upload an avatar
+authorsRouter.post("/:authorid/uploadAvatar", multer().single("avatar"), async (req, res, next) => {
+    try {
+        const filename = req.params.authorid + extname(req.file.originalname);
+
+        const author = await findAuthorsByIdAndUpdate(req.params.authorid, 
+            {avatarUrl: `/img/avatars/${filename}`})
+
+        if (author) {
+            await saveAuthorsImages(req.file.buffer, filename)
+            res.send(author)
+        } else {
+            next()
+        }
+
+    } catch (error) {
+        next(error)
+    }
+})
 
 export default authorsRouter;
