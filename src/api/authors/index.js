@@ -3,6 +3,8 @@ import multer from "multer";
 import { extname } from "path"
 import { saveNewAuthor, findAuthors, findAuthorById, findAuthorsByIdAndUpdate, findAuthorsByIdAndDelete } from "../../lib/db/tools.js";
 import { saveAuthorsImages } from "../../lib/fs/tools.js";
+import { pipeline } from "stream";
+import { Transform } from "json2csv";
 
 const authorsRouter = express.Router();
 
@@ -23,7 +25,7 @@ authorsRouter.get("/:authorid", async (req, res, next) => {
         if (author) {
             res.send(author)
         } else {
-            next(createHttpError);
+            next();
         }
     } catch (error) {
         next(error);
@@ -87,5 +89,20 @@ authorsRouter.post("/:authorid/uploadAvatar", multer().single("avatar"), async (
         next(error)
     }
 })
+
+authorsRouter.get("/exportCSV", async (req, res, next) => {
+    try {
+      const source = getAuthorsJSONReadableStream();
+      const transform = new Transform({ fields: ["name", "email", "nationality"] });
+      const destination = res;
+      res.setHeader("Content-Disposition", "attachment; filename=authors.csv");
+      pipeline(source, transform, destination, err => {
+        if (err) console.log(err);
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
 
 export default authorsRouter;
