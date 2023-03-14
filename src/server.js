@@ -33,8 +33,8 @@ server.use("/blogPosts", blogPostsRouter)
 
 
 /*----------Error Handlers----------*/
-server.use(badRequestHandler); 
-server.use(notFoundHandler); 
+server.use(badRequestHandler);
+server.use(notFoundHandler);
 server.use(genericHandler);
 
 
